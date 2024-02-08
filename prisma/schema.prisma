@@ -1,0 +1,375 @@
+// prisma schema for uber eats clone
+// 1. User
+// 2. Restaurant
+// 3. Category
+// 4. Dish
+// 5. Order
+// 6. OrderItem
+// 7. Payment
+// 8. Address
+// 9. Cart
+// 10. CartItem
+// 11. Favourite
+// 12. Like
+// 13. Comment
+// 14. Notification
+// 15. Message
+// 17. Payment
+// 18. OrderStatus
+// 19. DishOption
+// 20. Review
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  OWNER
+  ADMIN
+  RIDER
+}
+
+enum OrderStatus {
+  PENDING
+  COOKING
+  COOKED
+  PICKEDUP
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id                Int                @id @default(autoincrement())
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  email             String             @unique
+  username          String             @unique
+  firstName         String
+  lastName          String
+  password          String
+  isVerified        Boolean            @default(false)
+  bio               String?
+  avatar            String?
+  fbId              String?
+  googleId          String?
+  phone             String?
+  address           Address[]
+  role              UserRole           @default(USER)
+  restaurants       Restaurant[]
+  orders            Order[]
+  carts             Cart[]
+  favourites        Favourite[]
+  likes             DishLike[]
+  comments          Comment[]
+  notifications     Notification[]
+  messages          Message[]
+  payments          Payment[]
+  riderReviews      RiderReview[]
+  dishReviews       DishReview[]
+  restaurantReviews RestaurantReview[]
+  riderRating       RiderRating[]
+  dishRating        DishRating[]
+  // optional rider profile for user
+  riderProfile      RiderProfile?
+  riderProfileId    Int?
+  RestaurantRating  RestaurantRating[]
+}
+
+model RiderProfile {
+  id        Int           @id @default(autoincrement())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  user      User          @relation(fields: [id], references: [id])
+  userId    Int
+  vehicle   String
+  plate     String
+  license   String
+  rating    RiderRating[]
+  reviews   RiderReview[]
+  orders    Order[]
+
+  messages Message[]
+}
+
+model Restaurant {
+  id         Int                @id @default(autoincrement())
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  name       String
+  coverImg   String
+  address    String
+  category   Category           @relation(fields: [id], references: [id])
+  categoryId Int
+  owner      User               @relation(fields: [ownerId], references: [id])
+  ownerId    Int
+  favourites Favourite[]
+  menu       Dish[]
+  orders     Order[]
+  reviews    RestaurantReview[]
+  rating     RestaurantRating[]
+}
+
+model Category {
+  id          Int          @id @default(autoincrement())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  name        String
+  coverImg    String
+  restaurants Restaurant[]
+}
+
+model Dish {
+  id           Int          @id @default(autoincrement())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  name         String
+  description  String
+  price        Float
+  photo        String
+  restaurant   Restaurant   @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+  cart         CartItem[]
+  options      DishOption[]
+  orders       OrderItem[]
+  reviews      DishReview[]
+  likes        DishLike[]
+
+  ratingId   Int
+  Comment    Comment[]
+  DishRating DishRating[]
+}
+
+model Order {
+  id             Int           @id @default(autoincrement())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  total          Float
+  status         OrderStatus
+  user           User          @relation(fields: [userId], references: [id])
+  userId         Int
+  restaurant     Restaurant    @relation(fields: [restaurantId], references: [id])
+  restaurantId   Int
+  items          OrderItem[]
+  payment        Payment[]
+  RiderProfile   RiderProfile? @relation(fields: [riderProfileId], references: [id])
+  riderProfileId Int?
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  quantity  Int
+  dish      Dish     @relation(fields: [dishId], references: [id])
+  dishId    Int
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   Int
+}
+
+model Payment {
+  id        Int            @id @default(autoincrement())
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  total     Float
+  status    PaymentStatus?
+  type      PaymentType?
+  user      User           @relation(fields: [userId], references: [id])
+  userId    Int
+  order     Order          @relation(fields: [orderId], references: [id])
+  orderId   Int
+}
+
+model Address {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  address   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id])
+  userId    Int
+  items     CartItem[]
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  quantity  Int
+  dish      Dish     @relation(fields: [dishId], references: [id])
+  dishId    Int
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  cartId    Int
+}
+
+model Favourite {
+  id           Int        @id @default(autoincrement())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  user         User       @relation(fields: [userId], references: [id])
+  userId       Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+}
+
+model DishLike {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  dish      Dish     @relation(fields: [dishId], references: [id])
+  dishId    Int
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  text      String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  dish      Dish     @relation(fields: [dishId], references: [id])
+  dishId    Int
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  text      String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+}
+
+model Message {
+  id             Int           @id @default(autoincrement())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  text           String
+  user           User          @relation(fields: [userId], references: [id])
+  userId         Int
+  roomId         Int
+  RiderProfile   RiderProfile? @relation(fields: [riderProfileId], references: [id])
+  riderProfileId Int?
+}
+
+model DishOption {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  extra     Float
+  choices   Choice[]
+  dish      Dish     @relation(fields: [dishId], references: [id])
+  dishId    Int
+}
+
+model Choice {
+  id           Int        @id @default(autoincrement())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  name         String
+  price        Float
+  dishOption   DishOption @relation(fields: [dishOptionId], references: [id])
+  dishOptionId Int
+}
+
+model RiderReview {
+  id             Int           @id @default(autoincrement())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  text           String
+  rating         Float
+  user           User          @relation(fields: [userId], references: [id])
+  userId         Int
+  RiderProfile   RiderProfile? @relation(fields: [riderProfileId], references: [id])
+  riderProfileId Int?
+}
+
+model DishReview {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  text      String
+  rating    Float
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  dish      Dish     @relation(fields: [dishId], references: [id])
+  dishId    Int
+}
+
+model RestaurantReview {
+  id           Int        @id @default(autoincrement())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  text         String
+  rating       Float
+  user         User       @relation(fields: [userId], references: [id])
+  userId       Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+}
+
+model RiderRating {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  rating         Float
+  user           User         @relation(fields: [id], references: [id])
+  userId         Int
+  RiderProfile   RiderProfile @relation(fields: [riderProfileId], references: [id])
+  riderProfileId Int
+}
+
+model DishRating {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  rating    Float
+  user      User     @relation(fields: [id], references: [id])
+  userId    Int
+  dish      Dish     @relation(fields: [dishId], references: [id])
+  dishId    Int
+}
+
+model RestaurantRating {
+  id           Int        @id @default(autoincrement())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  rating       Float
+  user         User       @relation(fields: [userId], references: [id])
+  userId       Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+}
+
+enum PaymentStatus {
+  SUCCESS
+  FAILED
+  PROCESSING
+  CANCELLED
+  REFUNDED
+  EXPIRED
+  DECLINED
+}
+
+enum PaymentType {
+  MOBILE_MONEY
+  CARD
+  CASH_ON_DELIVERY
+  CRYPTO
+}
