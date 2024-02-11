@@ -1,8 +1,8 @@
 // prisma schema for uber eats clone
 // 1. User
-// 2. Restaurant
+// 2. Shop
 // 3. Category
-// 4. Dish
+// 4. ClothingItem
 // 5. Order
 // 6. OrderItem
 // 7. Payment
@@ -16,7 +16,7 @@
 // 15. Message
 // 17. Payment
 // 18. OrderStatus
-// 19. DishOption
+// 19. ClothingItemOption
 // 20. Review
 
 generator client {
@@ -46,42 +46,41 @@ enum OrderStatus {
 }
 
 model User {
-  id                String             @id @default(uuid())
-  createdAt         DateTime           @default(now())
-  lastSeen          DateTime           @updatedAt
-  email             String             @unique
-  username          String             @unique
-  firstName         String
-  lastName          String
-  password          String
-  phoneNumber       String?
-  isVerified        Boolean            @default(false)
-  bio               String?
-  avatar            String?
-  fbId              String?
-  googleId          String?
-  appleId           String?
-  dateOfBirth       DateTime?
-  address           Address[]
-  role              UserRole           @default(USER)
-  restaurants       Restaurant[]
-  orders            Order[]
-  carts             Cart[]
-  favourites        Favourite[]
-  likes             DishLike[]
-  comments          Comment[]
-  notifications     Notification[]
-  messages          Message[]
-  payments          Payment[]
-  riderReviews      RiderReview[]
-  dishReviews       DishReview[]
-  restaurantReviews RestaurantReview[]
-  riderRating       RiderRating[]
-  dishRating        DishRating[]
-  // optional rider profile for user
-  riderProfile      RiderProfile?
-  riderProfileId    Int?
-  RestaurantRating  RestaurantRating[]
+  id                  String               @id @default(uuid())
+  createdAt           DateTime             @default(now())
+  lastSeen            DateTime             @updatedAt
+  email               String               @unique
+  username            String               @unique
+  firstName           String
+  lastName            String
+  password            String
+  phoneNumber         String?
+  isVerified          Boolean              @default(false)
+  bio                 String?
+  avatar              String?
+  fbId                String?
+  googleId            String?
+  appleId             String?
+  dateOfBirth         DateTime?
+  address             Address[]
+  role                UserRole             @default(USER)
+  shops               Shop[]
+  orders              Order[]
+  carts               Cart[]
+  favourites          Favourite[]
+  likes               ClothingItemLike[]
+  comments            Comment[]
+  notifications       Notification[]
+  messages            Message[]
+  payments            Payment[]
+  riderReviews        RiderReview[]
+  clothingItemReviews ClothingItemReview[]
+  shopReviews         ShopReview[]
+  riderRating         RiderRating[]
+  clothingItemRating  ClothingItemRating[]
+  riderProfile        RiderProfile?
+  riderProfileId      Int?
+  ShopRating          ShopRating[]
 }
 
 model RiderProfile {
@@ -100,52 +99,65 @@ model RiderProfile {
   messages Message[]
 }
 
-model Restaurant {
-  id         Int                @id @default(autoincrement())
-  createdAt  DateTime           @default(now())
-  updatedAt  DateTime           @updatedAt
-  name       String
-  coverImg   String
-  address    String
-  category   Category           @relation(fields: [id], references: [id])
-  categoryId Int
-  owner      User               @relation(fields: [ownerId], references: [id])
-  ownerId    String             @unique
-  favourites Favourite[]
-  menu       Dish[]
-  orders     Order[]
-  reviews    RestaurantReview[]
-  rating     RestaurantRating[]
+model Shop {
+  id                 Int               @id @default(autoincrement())
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  name               String
+  coverImg           String
+  address            String
+  category           ShopCategory[]
+  categoryId         Int
+  owner              User              @relation(fields: [ownerId], references: [id])
+  ownerId            String            @unique
+  favourites         Favourite[]
+  menu               ClothingItem[]
+  orders             Order[]
+  reviews            ShopReview[]
+  rating             ShopRating[]
+  ClothingCategory   ClothingCategory? @relation(fields: [clothingCategoryId], references: [id])
+  clothingCategoryId Int?
 }
 
-model Category {
-  id          Int          @id @default(autoincrement())
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  name        String
-  coverImg    String
-  restaurants Restaurant[]
+model ClothingCategory {
+  id        Int            @id @default(autoincrement())
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  name      String
+  clothes   ClothingItem[]
+
+  coverImg String
+  shops    Shop[]
 }
 
-model Dish {
-  id           Int          @id @default(autoincrement())
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  name         String
-  description  String
-  price        Float
-  photo        String
-  restaurant   Restaurant   @relation(fields: [restaurantId], references: [id])
-  restaurantId Int
-  cart         CartItem[]
-  options      DishOption[]
-  orders       OrderItem[]
-  reviews      DishReview[]
-  likes        DishLike[]
+model ClothingItem {
+  id                 Int                  @id @default(autoincrement())
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  name               String
+  description        String
+  price              Float
+  photo              String
+  shop               Shop                 @relation(fields: [shopId], references: [id])
+  shopId             Int
+  cart               CartItem[]
+  options            ClothingItemOption[]
+  orders             OrderItem[]
+  reviews            ClothingItemReview[]
+  likes              ClothingItemLike[]
+  categories         ClothingCategory[]
+  ratingId           Int
+  Comment            Comment[]
+  ClothingItemRating ClothingItemRating[]
+}
 
-  ratingId   Int
-  Comment    Comment[]
-  DishRating DishRating[]
+model ShopCategory {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  coverImg  String
+  shops     Shop[]
 }
 
 model Order {
@@ -156,8 +168,8 @@ model Order {
   status         OrderStatus
   user           User          @relation(fields: [userId], references: [id])
   userId         String        @unique
-  restaurant     Restaurant    @relation(fields: [restaurantId], references: [id])
-  restaurantId   Int
+  shop           Shop          @relation(fields: [shopId], references: [id])
+  shopId         Int
   items          OrderItem[]
   payment        Payment[]
   RiderProfile   RiderProfile? @relation(fields: [riderProfileId], references: [id])
@@ -165,14 +177,14 @@ model Order {
 }
 
 model OrderItem {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  quantity  Int
-  dish      Dish     @relation(fields: [dishId], references: [id])
-  dishId    Int
-  order     Order    @relation(fields: [orderId], references: [id])
-  orderId   Int
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  quantity       Int
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
+  order          Order        @relation(fields: [orderId], references: [id])
+  orderId        Int
 }
 
 model Payment {
@@ -207,45 +219,45 @@ model Cart {
 }
 
 model CartItem {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  quantity  Int
-  dish      Dish     @relation(fields: [dishId], references: [id])
-  dishId    Int
-  cart      Cart     @relation(fields: [cartId], references: [id])
-  cartId    Int
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  quantity       Int
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
+  cart           Cart         @relation(fields: [cartId], references: [id])
+  cartId         Int
 }
 
 model Favourite {
-  id           Int        @id @default(autoincrement())
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  user         User       @relation(fields: [userId], references: [id])
-  userId       String     @unique
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
-  restaurantId Int
-}
-
-model DishLike {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
   userId    String   @unique
-  dish      Dish     @relation(fields: [dishId], references: [id])
-  dishId    Int
+  shop      Shop     @relation(fields: [shopId], references: [id])
+  shopId    Int
+}
+
+model ClothingItemLike {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String       @unique
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
 }
 
 model Comment {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  text      String
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @unique
-  dish      Dish     @relation(fields: [dishId], references: [id])
-  dishId    Int
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  text           String
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String       @unique
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
 }
 
 model Notification {
@@ -269,25 +281,25 @@ model Message {
   riderProfileId Int?
 }
 
-model DishOption {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  name      String
-  extra     Float
-  choices   Choice[]
-  dish      Dish     @relation(fields: [dishId], references: [id])
-  dishId    Int
+model ClothingItemOption {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  name           String
+  extra          Float
+  choices        Choice[]
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
 }
 
 model Choice {
-  id           Int        @id @default(autoincrement())
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  name         String
-  price        Float
-  dishOption   DishOption @relation(fields: [dishOptionId], references: [id])
-  dishOptionId Int
+  id                   Int                @id @default(autoincrement())
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  name                 String
+  price                Float
+  clothingItemOption   ClothingItemOption @relation(fields: [clothingItemOptionId], references: [id])
+  clothingItemOptionId Int
 }
 
 model RiderReview {
@@ -302,7 +314,19 @@ model RiderReview {
   riderProfileId Int?
 }
 
-model DishReview {
+model ClothingItemReview {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  text           String
+  rating         Float
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String       @unique
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
+}
+
+model ShopReview {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -310,20 +334,8 @@ model DishReview {
   rating    Float
   user      User     @relation(fields: [userId], references: [id])
   userId    String   @unique
-  dish      Dish     @relation(fields: [dishId], references: [id])
-  dishId    Int
-}
-
-model RestaurantReview {
-  id           Int        @id @default(autoincrement())
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  text         String
-  rating       Float
-  user         User       @relation(fields: [userId], references: [id])
-  userId       String     @unique
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
-  restaurantId Int
+  shop      Shop     @relation(fields: [shopId], references: [id])
+  shopId    Int
 }
 
 model RiderRating {
@@ -337,27 +349,34 @@ model RiderRating {
   riderProfileId Int
 }
 
-model DishRating {
+model ClothingItemRating {
+  id             Int          @id @default(autoincrement())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  rating         Float
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String       @unique
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id])
+  clothingItemId Int
+}
+
+model ShopRating {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   rating    Float
   user      User     @relation(fields: [userId], references: [id])
   userId    String   @unique
-  dish      Dish     @relation(fields: [dishId], references: [id])
-  dishId    Int
+  shop      Shop     @relation(fields: [shopId], references: [id])
+  shopId    Int
 }
 
-model RestaurantRating {
-  id           Int        @id @default(autoincrement())
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  rating       Float
-  user         User       @relation(fields: [userId], references: [id])
-  userId       String     @unique
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
-  restaurantId Int
-}
+// model Category {
+//   id       Int    @id @default(autoincrement())
+//   name     String
+//   coverImg String
+//   shops    Shop[]
+// }
 
 enum PaymentStatus {
   SUCCESS
