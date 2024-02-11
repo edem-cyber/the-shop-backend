@@ -12,9 +12,9 @@ CREATE TYPE "PaymentType" AS ENUM ('MOBILE_MONEY', 'CARD', 'CASH_ON_DELIVERY', '
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "lastSeen" TIMESTAMP(3) NOT NULL,
     "email" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
@@ -23,12 +23,10 @@ CREATE TABLE "User" (
     "phoneNumber" TEXT,
     "isVerified" BOOLEAN NOT NULL DEFAULT false,
     "bio" TEXT,
-    "lastSignIn" TIMESTAMP(3),
     "avatar" TEXT,
     "fbId" TEXT,
     "googleId" TEXT,
     "appleId" TEXT,
-    "phone" TEXT,
     "dateOfBirth" TIMESTAMP(3),
     "role" "UserRole" NOT NULL DEFAULT 'USER',
     "riderProfileId" INTEGER,
@@ -41,7 +39,7 @@ CREATE TABLE "RiderProfile" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "vehicle" TEXT NOT NULL,
     "plate" TEXT NOT NULL,
     "license" TEXT NOT NULL,
@@ -58,7 +56,7 @@ CREATE TABLE "Restaurant" (
     "coverImg" TEXT NOT NULL,
     "address" TEXT NOT NULL,
     "categoryId" INTEGER NOT NULL,
-    "ownerId" INTEGER NOT NULL,
+    "ownerId" TEXT NOT NULL,
 
     CONSTRAINT "Restaurant_pkey" PRIMARY KEY ("id")
 );
@@ -96,7 +94,7 @@ CREATE TABLE "Order" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "total" DOUBLE PRECISION NOT NULL,
     "status" "OrderStatus" NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "restaurantId" INTEGER NOT NULL,
     "riderProfileId" INTEGER,
 
@@ -123,7 +121,7 @@ CREATE TABLE "Payment" (
     "total" DOUBLE PRECISION NOT NULL,
     "status" "PaymentStatus",
     "type" "PaymentType",
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "orderId" INTEGER NOT NULL,
 
     CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
@@ -135,7 +133,7 @@ CREATE TABLE "Address" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "address" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "Address_pkey" PRIMARY KEY ("id")
 );
@@ -145,7 +143,7 @@ CREATE TABLE "Cart" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "Cart_pkey" PRIMARY KEY ("id")
 );
@@ -167,7 +165,7 @@ CREATE TABLE "Favourite" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "restaurantId" INTEGER NOT NULL,
 
     CONSTRAINT "Favourite_pkey" PRIMARY KEY ("id")
@@ -178,7 +176,7 @@ CREATE TABLE "DishLike" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "dishId" INTEGER NOT NULL,
 
     CONSTRAINT "DishLike_pkey" PRIMARY KEY ("id")
@@ -190,7 +188,7 @@ CREATE TABLE "Comment" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "text" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "dishId" INTEGER NOT NULL,
 
     CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
@@ -202,7 +200,7 @@ CREATE TABLE "Notification" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "text" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
 );
@@ -213,7 +211,7 @@ CREATE TABLE "Message" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "text" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "roomId" INTEGER NOT NULL,
     "riderProfileId" INTEGER,
 
@@ -251,7 +249,7 @@ CREATE TABLE "RiderReview" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "text" TEXT NOT NULL,
     "rating" DOUBLE PRECISION NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "riderProfileId" INTEGER,
 
     CONSTRAINT "RiderReview_pkey" PRIMARY KEY ("id")
@@ -264,7 +262,7 @@ CREATE TABLE "DishReview" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "text" TEXT NOT NULL,
     "rating" DOUBLE PRECISION NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "dishId" INTEGER NOT NULL,
 
     CONSTRAINT "DishReview_pkey" PRIMARY KEY ("id")
@@ -277,7 +275,7 @@ CREATE TABLE "RestaurantReview" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "text" TEXT NOT NULL,
     "rating" DOUBLE PRECISION NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "restaurantId" INTEGER NOT NULL,
 
     CONSTRAINT "RestaurantReview_pkey" PRIMARY KEY ("id")
@@ -289,7 +287,7 @@ CREATE TABLE "RiderRating" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "rating" DOUBLE PRECISION NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "riderProfileId" INTEGER NOT NULL,
 
     CONSTRAINT "RiderRating_pkey" PRIMARY KEY ("id")
@@ -301,7 +299,7 @@ CREATE TABLE "DishRating" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "rating" DOUBLE PRECISION NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "dishId" INTEGER NOT NULL,
 
     CONSTRAINT "DishRating_pkey" PRIMARY KEY ("id")
@@ -313,7 +311,7 @@ CREATE TABLE "RestaurantRating" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "rating" DOUBLE PRECISION NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "restaurantId" INTEGER NOT NULL,
 
     CONSTRAINT "RestaurantRating_pkey" PRIMARY KEY ("id")
@@ -325,8 +323,59 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 -- CreateIndex
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "RiderProfile_userId_key" ON "RiderProfile"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Restaurant_ownerId_key" ON "Restaurant"("ownerId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Order_userId_key" ON "Order"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Payment_userId_key" ON "Payment"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Address_userId_key" ON "Address"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Cart_userId_key" ON "Cart"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Favourite_userId_key" ON "Favourite"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "DishLike_userId_key" ON "DishLike"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Comment_userId_key" ON "Comment"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Notification_userId_key" ON "Notification"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Message_userId_key" ON "Message"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RiderReview_userId_key" ON "RiderReview"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "DishReview_userId_key" ON "DishReview"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RestaurantReview_userId_key" ON "RestaurantReview"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RiderRating_userId_key" ON "RiderRating"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "DishRating_userId_key" ON "DishRating"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RestaurantRating_userId_key" ON "RestaurantRating"("userId");
+
 -- AddForeignKey
-ALTER TABLE "RiderProfile" ADD CONSTRAINT "RiderProfile_id_fkey" FOREIGN KEY ("id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "RiderProfile" ADD CONSTRAINT "RiderProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Restaurant" ADD CONSTRAINT "Restaurant_id_fkey" FOREIGN KEY ("id") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -422,13 +471,13 @@ ALTER TABLE "RestaurantReview" ADD CONSTRAINT "RestaurantReview_userId_fkey" FOR
 ALTER TABLE "RestaurantReview" ADD CONSTRAINT "RestaurantReview_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "RiderRating" ADD CONSTRAINT "RiderRating_id_fkey" FOREIGN KEY ("id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "RiderRating" ADD CONSTRAINT "RiderRating_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "RiderRating" ADD CONSTRAINT "RiderRating_riderProfileId_fkey" FOREIGN KEY ("riderProfileId") REFERENCES "RiderProfile"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "DishRating" ADD CONSTRAINT "DishRating_id_fkey" FOREIGN KEY ("id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "DishRating" ADD CONSTRAINT "DishRating_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "DishRating" ADD CONSTRAINT "DishRating_dishId_fkey" FOREIGN KEY ("dishId") REFERENCES "Dish"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

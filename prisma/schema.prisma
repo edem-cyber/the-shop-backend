@@ -48,7 +48,7 @@ enum OrderStatus {
 model User {
   id                String             @id @default(uuid())
   createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  lastSeen          DateTime           @updatedAt
   email             String             @unique
   username          String             @unique
   firstName         String
@@ -57,7 +57,6 @@ model User {
   phoneNumber       String?
   isVerified        Boolean            @default(false)
   bio               String?
-  lastSignIn        DateTime?
   avatar            String?
   fbId              String?
   googleId          String?

@@ -7,6 +7,7 @@ import { CreateuserProps } from "../types/createuserprops";
 // import joi 
 import Joi from "joi";
 import createHttpError from "http-errors";
+import { createResponse } from "../utils/helper";
 
 
 
@@ -78,18 +79,42 @@ router.post('/signIn', async (req: Request, res: Response) => {
         const jwtToken = jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: process.env.JWT_EXPIRATION_TIME as string });
 
         if (!user) {
-            res.status(401).json({ error: 'Invalid credentials.' });
+            createResponse(
+                {
+                    res: res,
+                    statusCode: 401,
+                    statusText: "Unauthorized",
+                    message: "Invalid credentials.",
+                    data: { error: "Invalid credentials." },
+                }
+            );
             return;
         }
 
         const passwordMatch = await bcrypt.compare(password, user.password);
 
         if (!passwordMatch) {
-            res.status(401).json({ error: 'Invalid credentials.' });
+            createResponse(
+                {
+                    res: res,
+                    statusCode: 401,
+                    statusText: "Unauthorized",
+                    message: "Invalid credentials.",
+                    data: { error: "Invalid credentials." },
+                }
+            );
             return;
         }
 
-        res.status(200).json({ user, jwtToken });
+        createResponse(
+            {
+                res: res,
+                statusCode: 200,
+                statusText: "OK",
+                message: "User signed in.",
+                data: { user, jwtToken },
+            }
+        );
     } catch (error: any) {
         console.log(error);
     }
@@ -98,22 +123,13 @@ router.post('/signIn', async (req: Request, res: Response) => {
 
 router.post('/signOut', async (req: Request, res: Response) => {
     try {
-        const { email } = req.body;
-        // get jwt token from the request header
-        const jwtToken = req.headers.authorization?.split(" ")[1];
-        // verify the jwt token
-        jwt.verify(jwtToken as string, process.env.JWT_SECRET as string);
-        if (jwtToken === undefined) {
-            res.status(401).json(
-                {
-                    error: "Unauthorized",
-                    status: 401,
-                    statusText: "Unauthorized"
-                }
-            );
-            return;
-        }
-
+        res.status(200).json(
+            {
+                message: "You have been signed out.",
+                status: 200,
+                statusText: "OK"
+            }
+        );
     } catch (error: any) {
         createHttpError(500, "Internal Server Error");
         console.log(error);
@@ -134,6 +150,26 @@ router.get('/users', async (req: Request, res: Response) => {
 router.post('/createJohnDoe', async (req: Request, res: Response) => {
     try {
         const { email } = req.body;
+
+        // isEmailAlreadyInUse 
+        const user = await prisma.user.findUnique({
+            where: {
+                email,
+            },
+        });
+
+        if (user) {
+            createResponse(
+                {
+                    res: res,
+                    statusCode: 400,
+                    statusText: "Bad Request",
+                    message: "Email already in use.",
+                    data: { error: "Email already in use." },
+                }
+            );
+            return;
+        }
         if (email === "" || email === undefined) {
             res.status(400).json(
                 {
@@ -151,7 +187,7 @@ router.post('/createJohnDoe', async (req: Request, res: Response) => {
 
         const jwtToken = jwt.sign(jwtPayload, process.env.JWT_SECRET as string, { expiresIn: process.env.JWT_EXPIRATION_TIME as string });
 
-        const user = await createUserFn({
+        const user1 = await createUserFn({
             email: email,
             password: "password",
             username: "JohnDoe",
@@ -161,7 +197,15 @@ router.post('/createJohnDoe', async (req: Request, res: Response) => {
             bio: "I am John Doe",
         });
         console.log({ user, jwtToken });
-        res.status(201).json({ user, jwtToken });
+        createResponse(
+            {
+                res: res,
+                statusCode: 201,
+                statusText: "Created",
+                message: "User created.",
+                data: { user: user1, jwtToken: jwtToken },
+            }
+        );
     }
     catch (error: any) {
         console.log(error);
@@ -256,3 +300,38 @@ router.delete('/deleteJohnDoe', async (req: Request, res: Response) => {
     }
 }
 );
+
+
+// wipe out the database
+router.delete('/', async (req: Request, res: Response) => {
+    try {
+        // count the number of users
+        const userCount = await prisma.user.count();
+        // if there are no users, return a 404
+        if (userCount === 0) {
+            res.status(404).json(
+                {
+                    error: "No users found.",
+                    status: 404,
+                    statusText: "Not Found"
+                }
+            );
+            return;
+        }
+        // delete all users
+        const users = await prisma.user.deleteMany();
+        prisma.address.deleteMany();
+        prisma.favourite.deleteMany();
+        res.status(200).json({
+            message: "All users have been deleted.",
+            status: 200,
+            statusText: "OK",
+            users: users,
+            userCount: userCount
+        });
+    } catch (error: any) {
+        console.log(error);
+    }
+});
+
+
