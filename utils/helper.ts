@@ -21,11 +21,10 @@ export function createResponse(
         statusText: string;
         message: string;
         data: any;
-
     }
 ): any {
 
-    return res.status(statusCode).json({
+    return res?.status(statusCode).json({
         statusCode,
         statusText,
         message,
