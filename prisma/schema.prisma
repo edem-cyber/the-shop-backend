@@ -54,12 +54,15 @@ model User {
   firstName         String
   lastName          String
   password          String
+  phoneNumber       String?
   isVerified        Boolean            @default(false)
   bio               String?
+  lastSignIn        DateTime?
   avatar            String?
   fbId              String?
   googleId          String?
-  phone             String?
+  appleId           String?
+  dateOfBirth       DateTime?
   address           Address[]
   role              UserRole           @default(USER)
   restaurants       Restaurant[]
